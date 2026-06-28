@@ -14,11 +14,11 @@ git clone https://github.com/<your-username>/favicon-generator.git
 cd favicon-generator
 chmod +x generate_favicons.sh
 
-mkdir -p ~/.bin
-cp generate_favicons.sh ~/.bin/favicon-generator
+mkdir -p ~/bin
+cp generate_favicons.sh ~/bin/favicon-generator
 ```
 
-Ensure `~/.bin` is on your `PATH`.
+Ensure `~/bin` is on your `PATH`.
 
 ## Usage
 
