@@ -22,30 +22,55 @@ if [[ ! -f "$INPUT" ]]; then
 fi
 
 # ==========================
+# Check ImageMagick
+# ==========================
+if ! command -v magick >/dev/null 2>&1; then
+  echo "ImageMagick is required but not installed."
+
+  if command -v pacman >/dev/null 2>&1; then
+    read -rp "Install ImageMagick now? [Y/n]: " reply
+    reply=${reply:-Y}
+
+    if [[ "$reply" =~ ^[Yy]$ ]]; then
+      sudo pacman -S --needed imagemagick
+    else
+      echo "Aborted."
+      exit 1
+    fi
+  else
+    echo "Please install ImageMagick using your package manager."
+    exit 1
+  fi
+fi
+
+# ==========================
 # Prepare output directory
 # ==========================
 mkdir -p "$OUTDIR"
 
 echo "Generating favicons..."
-echo "Input:  $INPUT"
-echo "Output: $OUTDIR"
+echo "Using:   $(magick -version | head -n1)"
+echo "Input:   $INPUT"
+echo "Output:  $OUTDIR"
 
 # ==========================
 # Generate PNG sizes
 # ==========================
-convert "$INPUT" -resize 16x16   "$OUTDIR/favicon-16x16.png"
-convert "$INPUT" -resize 32x32   "$OUTDIR/favicon-32x32.png"
-convert "$INPUT" -resize 180x180 "$OUTDIR/apple-touch-icon.png"
-convert "$INPUT" -resize 192x192 "$OUTDIR/android-chrome-192x192.png"
-convert "$INPUT" -resize 512x512 "$OUTDIR/android-chrome-512x512.png"
+magick "$INPUT" -resize 16x16   "$OUTDIR/favicon-16x16.png"
+magick "$INPUT" -resize 32x32   "$OUTDIR/favicon-32x32.png"
+magick "$INPUT" -resize 180x180 "$OUTDIR/apple-touch-icon.png"
+magick "$INPUT" -resize 192x192 "$OUTDIR/android-chrome-192x192.png"
+magick "$INPUT" -resize 512x512 "$OUTDIR/android-chrome-512x512.png"
 
 # ==========================
 # Generate ICO (multi-size)
 # ==========================
-convert "$INPUT" -define icon:auto-resize=16,32,48 "$OUTDIR/favicon.ico"
+magick "$INPUT" \
+  -define icon:auto-resize=16,32,48 \
+  "$OUTDIR/favicon.ico"
 
 # ==========================
-# Optional: manifest helper
+# Generate web manifest
 # ==========================
 cat > "$OUTDIR/site.webmanifest" <<EOF
 {
@@ -69,4 +94,6 @@ cat > "$OUTDIR/site.webmanifest" <<EOF
 }
 EOF
 
-echo "Done ✔ Favicons generated in: $OUTDIR"
+echo
+echo "✔ Done! Favicons generated in:"
+echo "  $OUTDIR"
